@@ -1,9 +1,3 @@
-I wasn’t able to directly view the GitHub repo via search, but based on everything you’ve shared so far, I can absolutely help you draft a polished **README.md** for your **BiLSTM Financial Market Predictor**. Here's a detailed structure you—or someone with access—can drop into your repo, tweak file/project names, and add links/screenshots where needed:
-
----
-
-## 📘 README.md Draft
-
 ### # Financial Market Predictor (BiLSTM + Optuna)
 
 **Predict 45 days ahead in normalized stock data using a Bi‑LSTM optimized with Optuna. Built with full modular architecture including dataset loaders, training logs, sequence prep, and evaluation — part of a larger system with scraper and future BERT integration.**
