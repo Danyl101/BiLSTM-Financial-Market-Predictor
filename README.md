@@ -10,7 +10,6 @@ This project is a core module of a larger pipeline that includes:
 
 * A web scraper + React frontend for collecting article keywords and target websites
 * A **Bi‑LSTM time‑series forecasting engine** tuned via *Optuna*
-* (Planned) A BERT-based model for factual validation and news sentiment
 * Commit, snapshot, and hyperparameter logs to ensure reproducibility
 
 The goal: **predict future stock movement 45 days ahead** using past 60-day lookback sequences.
