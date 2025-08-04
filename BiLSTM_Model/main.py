@@ -17,7 +17,7 @@ def train_model():
         total_train_loss = 0
         for x, y in train_loader:
             x, y = x.to(device), y.to(device)
-            preds = model(x)
+            preds,_ = model(x)
             loss = criterion_train(preds, y)
             
             optimizer.zero_grad() #Resets accumulated gradients from previous batch
@@ -51,6 +51,6 @@ def optimize_hyperparameters():
         print(f"    {key}: {value}")
     
 if __name__=="__main__":
-    train_model()
+    optimize_hyperparameters()
     print("Training complete.")
         

@@ -64,7 +64,7 @@ def evaluate(model, loader):
     with torch.no_grad():
         for x, y in loader:#Loads arguments from sequences
             x, y = x.to(device), y.to(device) 
-            preds = model(x) #Passes the sequences through the model
+            preds,_ = model(x) #Passes the sequences through the model
             loss = criterion(preds, y) #Calculates the loss
             total_loss += loss.item()
             

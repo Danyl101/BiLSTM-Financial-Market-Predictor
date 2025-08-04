@@ -1,6 +1,5 @@
 import torch
 import torch.nn as nn
-import optuna
 import os
 import torch.optim as optim
 from torch.utils.data import DataLoader, Dataset
@@ -9,6 +8,7 @@ import time
 import traceback
 import gc
 
+import torch.nn.functional as F
 from lstm_dataload import train_dataset, test_dataset
 from lstm_utils import evaluate_metrics, log_cpu_memory, device
    
@@ -27,15 +27,17 @@ class BiLSTMModel(nn.Module):
                 logging.error(f"Error in BiLSTMModel: {e}")
                 logging.debug(traceback.format_exc())
             self.lstm = nn.LSTM(input_size, hidden_size, num_layers, batch_first=True,bidirectional=self.bidirectional)#Model is defined
+            self.attention=Attention(hidden_size*2)
             self.dropout=nn.Dropout(dropout) #Dropout to reduce overfitting
             self.fc = nn.Linear(hidden_size*2, 1) #Produces 1 output value
 
         #Defines movement of data through the model
         def forward(self, x):
             out, _ = self.lstm(x)
-            out = out[:, -1, :]  # Take the last timestep
-            out = self.dropout(out)
-            return self.fc(out).view(-1) #Removes last dimension from output tensor
+            context,attn_weights=self.attention(out)
+            out = self.dropout(context)
+            out=self.fc(out).view(-1)
+            return out,attn_weights #Removes last dimension from output tensor
 
 def objective(trial):
     try:
@@ -57,7 +59,7 @@ def objective(trial):
         log_cpu_memory("Before Trial")
             
         model = BiLSTMModel(input_size=4, hidden_size=hidden_size, dropout=dropout).to(device) #Defines model for bayesian
-        criterion = nn.MSELoss()
+        train_criterion=TimeWeightedLoss()
         optimizer = optim.Adam(model.parameters(), lr=learning_rate) #Defines optimizer
 
         epoch = 75 #No of epochs
@@ -67,8 +69,8 @@ def objective(trial):
             for xb, yb in train_loader: #Loads input features and target features
                 xb, yb = xb.to(device), yb.to(device)               
                 optimizer.zero_grad() #Resets optimizer back to zero gradient after every epoch
-                output = model(xb)
-                loss = criterion(output, yb) #Checks models output with the actual output
+                output,_ = model(xb)
+                loss = train_criterion(output, yb) #Checks models output with the actual output
                 loss.backward() #Propagates backwards and finds gradients of loss 
                 optimizer.step() #Updates the weights
 
@@ -120,6 +122,19 @@ class TimeWeightedLoss(nn.Module):
                 logging.error(f"Error in TimeWeightedLoss: {e}")
                 logging.debug(traceback.format_exc())
                 return None
+
+class Attention(nn.Module):
+    def __init__(self,hidden_dim):
+        super().__init__()
+        self.attention=nn.Linear(hidden_dim,1)
+    
+    def forward(self,lstm_output):
+        energy=self.attention(lstm_output)  #B,T,1
+        weights=F.softmax(energy.squeeze(-1),dim=1)   #B,T
+        context=torch.bmm(weights.unsqueeze(1),lstm_output).squeeze(1) #B,H
+        return context,weights
+        
+        
         
    
     
