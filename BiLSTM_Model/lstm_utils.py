@@ -16,7 +16,7 @@ import os
 
 #Logging function for optuna trials
 logging.basicConfig(
-        filename="Logs/Optuna.log",
+        filename="Optuna.log",
         level=logging.INFO,
         format="%(asctime)s [%(levelname)s] %(message)s",
         filemode="w",
@@ -64,7 +64,7 @@ def evaluate(model, loader):
     with torch.no_grad():
         for x, y in loader:#Loads arguments from sequences
             x, y = x.to(device), y.to(device) 
-            preds,_ = model(x) #Passes the sequences through the model
+            preds,_,_= model(x) #Passes the sequences through the model
             loss = criterion(preds, y) #Calculates the loss
             total_loss += loss.item()
             
@@ -77,7 +77,7 @@ def predict(model, loader):
     with torch.no_grad():
         for x, y in loader:
             x, y = x.to(device), y.to(device)
-            pred = model(x)
+            pred,_,_ = model(x)
             preds.append(pred) #Appends models predictions to the list
             targets.append(y) #Appends actual values to the list
                     

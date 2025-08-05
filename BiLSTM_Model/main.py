@@ -8,8 +8,8 @@ import torch
 
 #Sets a model function to run optimal model after hyperparamters are achieved from optimization
 def train_model():
-    model=BiLSTMModel(input_size=4, hidden_size=128, dropout=0.3, num_layers=2, batch_size=16).to(device)
-    optimizer = optim.Adam(model.parameters(), lr=5.401798979253006e-05) #Defines optimizer
+    model=BiLSTMModel(input_size=4, hidden_size=256, dropout=0.3, num_layers=2, batch_size=32).to(device)
+    optimizer = optim.Adam(model.parameters(), lr=8.238048741701306e-05) #Defines optimizer
     criterion_train = TimeWeightedLoss()  # Example of a custom loss function
     epochs = 75
     for epoch in range(epochs):
@@ -17,7 +17,7 @@ def train_model():
         total_train_loss = 0
         for x, y in train_loader:
             x, y = x.to(device), y.to(device)
-            preds,_ = model(x)
+            preds,_,_ = model(x)
             loss = criterion_train(preds, y)
             
             optimizer.zero_grad() #Resets accumulated gradients from previous batch
@@ -51,6 +51,6 @@ def optimize_hyperparameters():
         print(f"    {key}: {value}")
     
 if __name__=="__main__":
-    optimize_hyperparameters()
+    train_model()
     print("Training complete.")
         

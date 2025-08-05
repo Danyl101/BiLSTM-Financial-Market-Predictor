@@ -35,9 +35,9 @@ class BiLSTMModel(nn.Module):
         def forward(self, x):
             out, _ = self.lstm(x)
             context,attn_weights=self.attention(out)
-            out = self.dropout(context)
-            out=self.fc(out).view(-1)
-            return out,attn_weights #Removes last dimension from output tensor
+            out_dropped = self.dropout(context)
+            output=self.fc(out_dropped).view(-1)
+            return output,attn_weights,out #Removes last dimension from output tensor
 
 def objective(trial):
     try:
@@ -69,7 +69,7 @@ def objective(trial):
             for xb, yb in train_loader: #Loads input features and target features
                 xb, yb = xb.to(device), yb.to(device)               
                 optimizer.zero_grad() #Resets optimizer back to zero gradient after every epoch
-                output,_ = model(xb)
+                output,_,_ = model(xb)
                 loss = train_criterion(output, yb) #Checks models output with the actual output
                 loss.backward() #Propagates backwards and finds gradients of loss 
                 optimizer.step() #Updates the weights
@@ -80,7 +80,7 @@ def objective(trial):
         with torch.no_grad():
             for x, y in test_loader:
                 x, y = x.to(device), y.to(device)
-                pred = model(x)
+                pred,_,_ = model(x)
                 preds.append(pred) #Appends models predictions to the list
                 truths.append(y) #Appends actual values to the list
             
@@ -101,7 +101,6 @@ def objective(trial):
         del optimizer
         torch.cuda.empty_cache()  # no GPU, but still clears PyTorch cache
         gc.collect()
-
         return mse
         
     except Exception as e:
@@ -115,9 +114,11 @@ class TimeWeightedLoss(nn.Module):
             super().__init__()
         def forward(self, y_pred, y_true):
             try:
-                batch_size = y_true.shape[0]  
-                weights = torch.linspace(1, 2, steps=batch_size).to(y_pred.device)
-                return torch.mean(weights * (y_pred - y_true) ** 2)
+                seq_len = y_true.shape[0]
+                Time_weights = torch.linspace(1.0,2.0, steps=seq_len).to(y_pred.device)
+                calc_weights=torch.mean((y_pred - y_true) ** 2)*Time_weights
+                calc_weights_mean=calc_weights.mean()
+                return calc_weights_mean
             except Exception as e:
                 logging.error(f"Error in TimeWeightedLoss: {e}")
                 logging.debug(traceback.format_exc())
