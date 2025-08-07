@@ -77,7 +77,7 @@ __________________________
 
 Iteration 3 [BILSTM]
 
-Since the model now had somewhat good results and the overall architecture was good , i decided to begin fine tuning the hyperparameters , for this i implemented bayesian optimization ,initially wanted to do gaussian functions by myself but since that requires some time and acquisition function could be difficult ,i decided to go for optuna , but there was an issue where optuna constantly became stuck ,so added in a bunch of try catch blocks everywhere and added return(inf) to the optuna block which solved it
+Since the model now had somewhat good results and the overall architecture was good , i decided to begin fine tuning the hyperparameters , for this i implemented bayesian optimization ,initially wanted to do gaussian functions by myself but since that requires some time and acquisition function could be difficult ,i decided to go for optuna , but there was an issue where optuna constantly became stuck ,so added in a bunch of try catch blocks everywhere and added return(inf) to the optuna block which solved it , also the r2 metric was dropped due to it being unreliable especially for financial time series data
 
 __________________________
 
@@ -99,6 +99,24 @@ epochs=75
 
 Epoch [75/75] Train Loss: 4.9970 | Val Loss: 0.4735
 Test Loss: 0.6706
-MSE: 0.0550, RMSE: 0.2345, MAE: 0.2030, R²: 0.0449, MAPE: 8.31%
+MSE: 0.0550, RMSE: 0.2345, MAE: 0.2030, MAPE: 8.31%
 
     Model is saved in Checkpoints folder 
+
+____________________________________
+
+Iteration 6 [BILSTM]
+
+So decided to try and add an attention mechanism to the model ,it initially produced diminshing results due to custom loss function being moreso a batch weighting that acted as timeweights due to unshuffling , but i decided to truly put timeweightedloss and ran it with the attention mechanism and their complimentary effects boosted the overall metrics, also ran bayesian on this and found a new output
+    
+        energy=self.attention(lstm_output)  #B,T,1
+        weights=F.softmax(energy.squeeze(-1),dim=1)   #B,T
+        context=torch.bmm(weights.unsqueeze(1),lstm_output).squeeze(1) #B,H
+
+Parameters 
+input_size=4, hidden_size=256, dropout=0.3, num_layers=2, batch_size=32 lr=8.238048741701306e-05
+epochs=75
+
+Epoch [75/75] Train Loss: 5.2792 | Val Loss: 0.5012
+Test Loss: 0.3741
+MSE: 0.0299, RMSE: 0.1730, MAE: 0.1493, MAPE: 6.08%

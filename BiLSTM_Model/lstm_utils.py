@@ -3,7 +3,7 @@ import torch.nn as nn
 import torch.optim as optim
 import random
 from torch.utils.data import DataLoader
-
+from sklearn.preprocessing import RobustScaler
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -41,20 +41,19 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
                 
 def evaluate_metrics(y_true, y_pred):
     try:
-        y_true = y_true.detach().cpu().numpy() #Takes the actual values
-        y_pred = y_pred.detach().cpu().numpy() #Takes the predicted values
+        y_true = y_true.detach().cpu().numpy()
+        y_pred = y_pred.detach().cpu().numpy()
         
         mse = mean_squared_error(y_true, y_pred)
         rmse = mse ** 0.5
         mae = mean_absolute_error(y_true, y_pred)
-        r2 = r2_score(y_true, y_pred)
         mape = (np.abs((y_true - y_pred) / y_true)).mean() * 100
     except Exception as e:
         logging.error(f"Error in evaluate_metrics: {e}")
         logging.debug(traceback.format_exc())
         return None, None, None, None, None
 
-    return mse, rmse, mae, r2, mape #Returns various metrics
+    return mse, rmse, mae, mape #Returns various metrics
     
 def evaluate(model, loader):
     log_cpu_memory("Before Trial")
@@ -84,8 +83,8 @@ def predict(model, loader):
         preds = torch.cat(preds, dim=0) #Converts datatype back for metrics evaluation
         targets = torch.cat(targets, dim=0)
 
-    mse, rmse, mae, r2, mape = evaluate_metrics(preds, targets)
-    return preds,targets,mse,rmse,mae,r2,mape
+    mse, rmse, mae, mape = evaluate_metrics(preds, targets)
+    return preds,targets,mse,rmse,mae,mape
     
 def plot(test_prediction,test_actuals):
 #Plotting the predictions vs actual values

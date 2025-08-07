@@ -1,10 +1,9 @@
 from lstm_utils import device,evaluate,predict,plot,set_deterministic
 set_deterministic()
 import optuna
-import torch.optim as optim 
+import torch.optim as optim
 from lstm_model import BiLSTMModel,TimeWeightedLoss,objective
 from lstm_dataload import train_loader, val_loader,test_loader
-import torch
 
 #Sets a model function to run optimal model after hyperparamters are achieved from optimization
 def train_model():
@@ -31,11 +30,11 @@ def train_model():
     test_loss = evaluate(model, test_loader)
     print(f"Test Loss: {test_loss:.4f}")
     # Optional: Get predictions and true values for plotting
-    test_preds, test_actuals, mse, rmse, mae, r2, mape = predict(model, test_loader)
+    test_preds, test_actuals, mse, rmse, mae, mape = predict(model, test_loader)
     
-    torch.save(model.state_dict(), f"checkpoints/best_model_1.pt")
-
-    print(f"MSE: {mse:.4f}, RMSE: {rmse:.4f}, MAE: {mae:.4f}, R²: {r2:.4f}, MAPE: {mape:.2f}%")
+    #torch.save(model.state_dict(), f"checkpoints/best_model_1.pt")
+    
+    print(f"MSE: {mse:.4f}, RMSE: {rmse:.4f}, MAE: {mae:.4f}, MAPE: {mape:.2f}%")
     plot(test_preds, test_actuals)  # Plot predictions vs actual values
 
 #Implements bayesian optimization
