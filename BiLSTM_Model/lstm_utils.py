@@ -39,22 +39,27 @@ def log_cpu_memory(tag=""):
         
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
                 
+#Function to evaluate metrics
 def evaluate_metrics(y_true, y_pred):
     try:
-        y_true = y_true.detach().cpu().numpy()
-        y_pred = y_pred.detach().cpu().numpy()
+        if isinstance(y_pred, torch.Tensor):
+            y_pred = y_pred.detach().cpu().numpy()#Detaches array from cpu and converts into numpy
+            
+        if isinstance(y_true,torch.Tensor):
+            y_true =y_true.detach.cpu().numpy()
         
-        mse = mean_squared_error(y_true, y_pred)
+        mse = mean_squared_error(y_true, y_pred) #Calculate Metrics
         rmse = mse ** 0.5
         mae = mean_absolute_error(y_true, y_pred)
         mape = (np.abs((y_true - y_pred) / y_true)).mean() * 100
     except Exception as e:
         logging.error(f"Error in evaluate_metrics: {e}")
         logging.debug(traceback.format_exc())
-        return None, None, None, None, None
+        return None, None, None, None
 
     return mse, rmse, mae, mape #Returns various metrics
     
+#Validation function (Validation data)
 def evaluate(model, loader):
     log_cpu_memory("Before Trial")
     criterion = nn.MSELoss()
@@ -70,6 +75,7 @@ def evaluate(model, loader):
     log_cpu_memory("After Trial")        
     return total_loss
 
+#Prediction function(Test Data)
 def predict(model, loader):
     model.eval()
     preds, targets = [], [] #Defines empty lists to store predictions and targets
@@ -95,4 +101,8 @@ def plot(test_prediction,test_actuals):
     plt.xlabel("Time")
     plt.ylabel("Scaled Close Price")        
     plt.legend()
-    plt.show()
+    plt.savefig(r'D:\Prediction_Model\Documentation\BiLSTM Graph_2.png')
+    
+
+        
+    
