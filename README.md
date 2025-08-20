@@ -1,7 +1,3 @@
-Here’s your **BiLSTM README** fully refactored to match the KeyStone style you provided, with clean formatting and integrated visuals:
-
----
-
 # 📊 Financial Market Predictor — BiLSTM + Optuna
 
 **Financial Market Predictor** is a modular system for forecasting stock market trends using a **BiLSTM** network tuned with **Optuna**. It predicts **45 days ahead** using 60-day lookback sequences and integrates a full pipeline of data preprocessing, training logs, sequence management, and evaluation.
